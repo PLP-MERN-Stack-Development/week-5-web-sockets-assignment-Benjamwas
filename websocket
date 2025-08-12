@@ -1,0 +1,42 @@
+server.js
+
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  },
+});
+
+// ✅ Handle socket connections
+io.on('connection', (socket) => {
+  console.log(`New client connected: ${socket.id}`);
+
+  //  Listen for booking events
+  socket.on('newBooking', (data) => {
+    console.log('New booking received:', data);
+
+    // Broadcast to all other connected clients
+    socket.broadcast.emit('bookingUpdate', data);
+  });
+
+  // Disconnect
+  socket.on('disconnect', () => {
+    console.log(`Client disconnected: ${socket.id}`);
+  });
+});
+
+// ✅ Expose io globally if needed
+app.set('io', io);
+
+client side
+
+useEffect(() => {
+    socket.on('bookingCreated', (newBooking) => {
+      setBookings(prev => [newBooking, ...prev]);
+      setFilteredData(prev => [newBooking, ...prev]);
+    });
+    return () => {
+      socket.off('bookingCreated');
+    };
+  }, []);
